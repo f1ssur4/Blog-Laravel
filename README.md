@@ -9,9 +9,10 @@
 
 5) console: php artisan migrate
    
-6) console: php artisan db:seed --class=UsersSeeder
-   console: php artisan db:seed --class=PostsSeeder
-   console: php artisan db:seed --class=ReviewsSeeder
+if you need seeds: 
+    console: php artisan db:seed --class=UsersSeeder
+    console: php artisan db:seed --class=PostsSeeder
+    console: php artisan db:seed --class=ReviewsSeeder
       
 7) console: php artisan storage:link 
 
