@@ -16,9 +16,6 @@ class AdminController extends Controller
 
         if ($request->has('table')) {
             switch ($request->post('table')) {
-                case 'users':
-                    session()->put('table', 'users');
-                    return view('admin.table.users');
                 case 'posts':
                     session()->put('table', 'posts');
                     $posts_1 = Posts::where('status', '1')->orderby('date_create', 'desc')->get();
@@ -37,8 +34,6 @@ class AdminController extends Controller
     public function delete(Request $request)
     {
         switch (session()->get('table')){
-            case 'users':
-                //
             case 'posts':
                 $id = intval($request->post('id'));
                 Posts::destroy($id);
@@ -60,8 +55,6 @@ class AdminController extends Controller
     {
 
         switch (session()->get('table')){
-            case 'users':
-                //
             case 'posts':
                 Posts::where('id', $request->post('id'))->update(['status' => 1]);
                 $posts_1 = Posts::where('status', '1')->orderby('date_create', 'desc')->get();
