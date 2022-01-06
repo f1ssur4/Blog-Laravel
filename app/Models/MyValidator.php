@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 
-class ReviewValidate extends Model
+class MyValidator extends Model
 {
     use HasFactory;
 
@@ -23,7 +23,6 @@ class ReviewValidate extends Model
             foreach ($errors as $error_key => $error_val) {
                 $errors_arr[$error_key] = $error_val;
             }
-
             return $errors_arr;
         }
     }

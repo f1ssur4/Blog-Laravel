@@ -28,4 +28,15 @@ class Reviews extends Model
         session()->put('success_review', 'Review has been successfully submitted for review');
         return view('ajaxHelper.createReview');
     }
+
+    public function destroyById($id)
+    {
+        $id = intval($id);
+        Reviews::destroy($id);
+    }
+
+    public function updateById($id, $arrData)
+    {
+        Reviews::where('id', $id)->update($arrData);
+    }
 }

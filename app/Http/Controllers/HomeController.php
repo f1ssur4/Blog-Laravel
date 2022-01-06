@@ -2,28 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MyValidator;
 use App\Models\Posts;
 use App\Models\Reviews;
-use App\Models\ReviewValidate;
 use App\Models\Users;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
-use Symfony\Component\Console\Input\Input;
-use function Symfony\Component\String\s;
 
 class HomeController extends Controller
 {
     public $posts;
     public $reviews;
+    public $validateModel;
+    public $users;
 
     public function __construct()
     {
         $this->posts = new Posts();
         $this->reviews = new Reviews();
         $this->users = new Users();
-        $this->valModel = new ReviewValidate();
+        $this->validateModel = new MyValidator();
     }
 
     public function index(Request $request)
@@ -58,10 +55,10 @@ class HomeController extends Controller
              'email' => ['required','email'],
              'content' => ['required'],
          ];
-        if ($this->valModel->validate($request->post(), $rules) === true) {
-            $this->reviews->createReview($request->post());
+        if ($this->validateModel->validate($request->post(), $rules) === true) {
+            return $this->reviews->createReview($request->post());
         }else{
-            session()->put('error_create_user', $this->valModel->validate($request->post(), $rules));
+            session()->put('error_create_user', $this->validateModel->validate($request->post(), $rules));
             return view('ajaxHelper.signup')->render();
         }
     }
@@ -79,7 +76,7 @@ class HomeController extends Controller
             'password' => 'required',
         ];
 
-        if ($this->valModel->validate($request->post(), $rules) === true) {
+        if ($this->validateModel->validate($request->post(), $rules) === true) {
             return $this->users->signin($request->post());
         }else {
             session()->put('error_sign', 'Username or password entered incorrectly. Perhaps you haven\'t registered yet?');
@@ -101,10 +98,10 @@ class HomeController extends Controller
             'password_hash' => 'required',
         ];
 
-        if ($this->valModel->validate($request->post(), $rules) === true) {
+        if ($this->validateModel->validate($request->post(), $rules) === true) {
             return $this->users->signup($request->post());
         }else {
-            session()->put('error_create_user', $this->valModel->validate($request->post(), $rules));
+            session()->put('error_create_user', $this->validateModel->validate($request->post(), $rules));
             return view('ajaxHelper.signup')->render();
         }
     }

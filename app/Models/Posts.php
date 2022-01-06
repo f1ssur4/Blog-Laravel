@@ -56,4 +56,16 @@ class Posts extends Model
         $post->increment('count_views');
         return view('home.post', ['post' => $post]);
     }
+
+    public function destroyById($id)
+    {
+        $id = intval($id);
+        Posts::destroy($id);
+    }
+
+    public function updateById($id, $arrData)
+    {
+        Posts::where('id', $id)->update($arrData);
+    }
+
 }
