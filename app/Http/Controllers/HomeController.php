@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Posts;
 use App\Models\Reviews;
+use App\Models\ReviewValidate;
 use App\Models\Users;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -14,72 +15,53 @@ use function Symfony\Component\String\s;
 
 class HomeController extends Controller
 {
+    public $posts;
+    public $reviews;
+
+    public function __construct()
+    {
+        $this->posts = new Posts();
+        $this->reviews = new Reviews();
+        $this->users = new Users();
+        $this->valModel = new ReviewValidate();
+    }
 
     public function index(Request $request)
     {
+
         if ($request->has('filter')) {
             session()->put('filter', $request->post('filter'));
-            if (session()->get('filter') === 'default'){
-                $posts = Posts::where('status', '1')->simplePaginate(5);
-                return view('ajaxHelper.filtered', ['posts' => $posts]);
-            }
-
-            $sorted_posts = Posts::where('status', '1')->orderby($request->post('filter'), 'desc')->simplePaginate(5);
-            return view('ajaxHelper.filtered', ['posts' => $sorted_posts]);
+                return $this->posts->getAll(session()->has('filter'));
         }
 
         if (session()->has('filter')){
-
-            if (session()->get('filter') === 'default'){
-                $posts = Posts::where('status', '1')->simplePaginate(5);
-                return view('home.index', ['posts' => $posts]);
-            }
-
-            $sorted_posts = Posts::where('status', '1')->orderby(session()->get('filter'), 'desc')->simplePaginate(5);
-            return view('home.index', ['posts' => $sorted_posts]);
+            return $this->posts->getAllPaginate(session()->has('filter'));
         }
-
-            $posts = Posts::where('status', '1')->simplePaginate(5);
-            return view('home.index', ['posts' => $posts]);
+        return $this->posts->getAll('');
     }
 
 
     public function post($id)
     {
-        $post = Posts::where('id', $id)->first();
-        $post->increment('count_views');
-        return view('home.post', ['post' => $post]);
+        return $this->posts->getOne($id);
     }
 
 
     public function reviews(Request $request)
     {
-            $reviews = Reviews::where('status', '1')->orderby('date_create', 'desc')->simplePaginate(5);
-            return view('home.reviews', ['reviews' => $reviews]);
+        return $this->reviews->getAll();
     }
     public function reviewCreate(Request $request)
     {
-        $validated = Validator::make($request->all(), [
-            'username' => ['required','max:255','alpha_num'],
-            'email' => ['required','email'],
-            'content' => ['required'],
-        ]);
-         htmlspecialchars($request->post('content'));
-
-        if ($validated->passes()) {
-            Reviews::create(['username' => $request->post('username'),
-                'email' => $request->post('email'),
-                'content' => $request->post('content'),
-                'date_create' => date('Y:m:d'),
-            ]);
-            session()->put('success_review', 'Review has been successfully submitted for review');
-            return view('ajaxHelper.createReview');
+         $rules = [
+             'username' => ['required','max:255','alpha_num'],
+             'email' => ['required','email'],
+             'content' => ['required'],
+         ];
+        if ($this->valModel->validate($request->post(), $rules) === true) {
+            $this->reviews->createReview($request->post());
         }else{
-            $errors = $validated->errors()->toArray();
-            foreach ($errors as $error_key => $error_val) {
-                $errors_arr[$error_key] = $error_val;
-            }
-            session()->put('error_create_user', $errors_arr);
+            session()->put('error_create_user', $this->valModel->validate($request->post(), $rules));
             return view('ajaxHelper.signup')->render();
         }
     }
@@ -92,22 +74,14 @@ class HomeController extends Controller
 
     public function signing(Request $request)
     {
-        $validated = Validator::make($request->post(), [
+        $rules = [
             'username' => 'required|max:255',
             'password' => 'required',
-        ]);
+        ];
 
-        if ($validated->passes() && Users::where('username', $request->post('username'))->first()->username){
-            if (Hash::check($request->post('password'), Users::where('username', $request->post('username'))->first()->password_hash)){
-                session()->put('success_signin', 'You are successfully logged in');
-                session()->put('auth', 1);
-                session()->put('username', Users::where('username', $request->post('username'))->first()->username);
-                return redirect('/');
-            }else {
-                session()->put('error_sign', 'Username or password entered incorrectly. Perhaps you haven\'t registered yet?');
-                return view('home.login');
-            }
-        }else{
+        if ($this->valModel->validate($request->post(), $rules) === true) {
+            return $this->users->signin($request->post());
+        }else {
             session()->put('error_sign', 'Username or password entered incorrectly. Perhaps you haven\'t registered yet?');
             return view('home.login');
         }
@@ -121,35 +95,16 @@ class HomeController extends Controller
 
     public function createUser(Request $request)
     {
-
-        $validated = Validator::make($request->all(), [
+        $rules = [
             'username' => 'required|max:255',
             'email' => 'required|email',
             'password_hash' => 'required',
-        ]);
+        ];
 
-        if ($validated->passes()) {
-            try {
-               $user_data = $request->all();
-               $user_data['password_hash'] = Hash::make($user_data['password_hash']);
-                Users::create($user_data);
-            }catch (\Exception $e){
-                $e->getMessage();
-                session()->put('error_add_user', 'This username or email already exists');
-                return view('ajaxHelper.signup')->render();
-            }
-                session()->put('auth', 1);
-                $username = Users::where('username', $user_data['username'])->first();
-                session()->put('username', $username->username);
-                session()->put('success_create_user', 'You have successfully registered!');
-                return view('ajaxHelper.signup')->render();
-
+        if ($this->valModel->validate($request->post(), $rules) === true) {
+            return $this->users->signup($request->post());
         }else {
-            $errors = $validated->errors()->toArray();
-            foreach ($errors as $error_key => $error_val) {
-            $errors_arr[$error_key] = $error_val;
-            }
-            session()->put('error_create_user', $errors_arr);
+            session()->put('error_create_user', $this->valModel->validate($request->post(), $rules));
             return view('ajaxHelper.signup')->render();
         }
     }

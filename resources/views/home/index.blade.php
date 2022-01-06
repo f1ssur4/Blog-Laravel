@@ -18,7 +18,7 @@
     <h3>Sort by</h3>
     <button class="button322" value="count_views" type="submit" onclick="function()">Views more to less</button>
     <button class="button323" value="date_create" type="submit" onclick="function()">New to Old</button>
-    <button class="button324" value="default" type="submit" onclick="function()">Default</button>
+    <button class="button324" value="title" type="submit" onclick="function()">Default</button>
 
     <div class="content">
     <?php foreach($posts as $post): ?>
