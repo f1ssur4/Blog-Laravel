@@ -68,6 +68,7 @@ class AdminController extends Controller
                                                 'content' => $request->post('content'),
                                                 'image' => $imageName,
                                                 'date_create' => $date])) {
+                    session()->put('success_create_post', 'You have added a new post! Now check and publish it.');
                     return redirect('/admin');
                 }else{
                     session()->put('error_create_post', 'Error creating post, please, try again!');

@@ -5,6 +5,16 @@
 @section('content')
 <h1>Admin Panel</h1>
 
+<?php if (session()->has('success_create_post')): ?>
+<div class="alert alert-success" role="alert">
+    <?php
+        echo session()->get('success_create_post') . '<br>';
+    session()->forget('success_create_post');
+    ?>
+</div>
+<?php endif; ?>
+
+
 <div class="mb-3 row">
     <p>Table Posts  <button type="button" value="posts" class="btn btn-secondary" id="button_posts" onclick="function ()">Go!</button></p>
     <p>Table Reviews  <button type="button" value="reviews" class="btn btn-success" id="button_reviews" onclick="function ()">Go!</button></p>
